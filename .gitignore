@@ -22,7 +22,6 @@ env/
 *.swo
 
 # Model weights (downloaded at runtime)
-models/*.pt
 models/*.pth
 models/*.onnx
 *.pt
