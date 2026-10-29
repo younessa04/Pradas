@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Model weights (downloaded at runtime)
+models/*.pt
+models/*.pth
+models/*.onnx
+*.pt
+*.pth
+
+# Output and Input data
+data/output/*
+!data/output/.gitkeep
+data/input/*
+!data/input/.gitkeep
+data/MOT17/
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.zip
+*.tar.gz
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage

@@ -1,0 +1,39 @@
+# PRADAS - Advanced Pedestrian Risk-Aware Driver Assistance System
+# Dependencies - Compatible with Python 3.11/3.12, CPU or CUDA
+
+# Object Detection & Pose Estimation
+ultralytics>=8.1.0,<9.0.0
+
+# Deep Learning Framework (CPU version; for CUDA see README)
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Image Processing
+opencv-python>=4.8.0
+
+# Numerical Processing
+numpy>=1.24.0,<2.0.0
+
+# Model Utilities (required by MiDaS)
+timm>=0.9.0
+
+# API Framework
+fastapi>=0.100.0
+uvicorn[standard]>=0.20.0
+websockets>=11.0
+
+# Data Validation
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# Configuration
+PyYAML>=6.0
+python-dotenv>=1.0.0
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0
+
+# Optional: for async test client
+anyio>=3.0.0
