@@ -24,8 +24,10 @@ env/
 # Model weights (downloaded at runtime)
 models/*.pth
 models/*.onnx
-*.pt
+.pt
 *.pth
+!models/best.pt
+!models/best_v2.pt
 
 # Output and Input data
 data/output/*
