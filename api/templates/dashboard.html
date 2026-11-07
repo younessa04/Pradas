@@ -720,10 +720,21 @@
 
         // Start / Stop Pipeline
         document.getElementById('startBtn').addEventListener('click', async () => {
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
             const source = document.getElementById('sourceSelect').value;
             const model = document.getElementById('modelSelect').value;
             const confidence = parseFloat(document.getElementById('confRange').value);
             const loopVideo = document.getElementById('loopCheck').checked;
+
+            startBtn.disabled = true;
+            startBtn.style.opacity = '0.7';
+            startBtn.textContent = '⏳ DÉMARRAGE (5s)...';
+            
+            const banner = document.getElementById('fcwBanner');
+            const bannerText = document.getElementById('fcwText');
+            banner.className = 'fcw-banner caution';
+            bannerText.textContent = '⏳ CHARGEMENT DES MODÈLES IA (YOLO + MIDAS)...';
 
             try {
                 const res = await fetch('/api/pipeline/start', {
@@ -733,7 +744,7 @@
                         source: source,
                         model: model,
                         confidence: confidence,
-                        imgsz: 960,
+                        imgsz: 640,
                         frame_skip: 1,
                         night_mode: "auto",
                         loop_video: loopVideo
@@ -741,15 +752,37 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    document.getElementById('videoFeed').src = '/video_feed?' + Date.now();
+                    startBtn.textContent = '🟢 SYSTÈME ACTIF';
+                    startBtn.style.opacity = '1.0';
+                    banner.className = 'fcw-banner';
+                    bannerText.textContent = '🟢 SYSTÈME ADAS ACTIF — ROUTE DÉGAGÉE';
+                    document.getElementById('activeModelTag').textContent = model.includes('v2') ? 'YOLOv11s Joint' : 'YOLOv8s';
+                    // Reload video feed img
+                    document.getElementById('videoFeed').src = '/video_feed?t=' + Date.now();
+                } else {
+                    startBtn.disabled = false;
+                    startBtn.style.opacity = '1.0';
+                    startBtn.textContent = '▶ Démarrer ADAS';
+                    bannerText.textContent = '❌ Erreur de démarrage';
                 }
             } catch (e) {
-                alert("Erreur de démarrage : " + e);
+                startBtn.disabled = false;
+                startBtn.style.opacity = '1.0';
+                startBtn.textContent = '▶ Démarrer ADAS';
+                alert("Erreur de connexion au serveur : " + e);
             }
         });
 
         document.getElementById('stopBtn').addEventListener('click', async () => {
+            const startBtn = document.getElementById('startBtn');
             await fetch('/api/pipeline/stop', {method: 'POST'});
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1.0';
+            startBtn.textContent = '▶ Démarrer ADAS';
+            const banner = document.getElementById('fcwBanner');
+            banner.className = 'fcw-banner';
+            document.getElementById('fcwText').textContent = 'SYSTÈME EN ATTENTE — SÉLECTIONNEZ UNE SOURCE';
+            document.getElementById('videoFeed').src = '/video_feed?t=' + Date.now();
         });
 
         // Radar Canvas Renderer
@@ -925,3 +958,4 @@
     </script>
 </body>
 </html>
+

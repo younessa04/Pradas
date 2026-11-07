@@ -193,22 +193,38 @@ class PipelineService:
     ) -> None:
         """Core execution loop inside background thread."""
         try:
-            settings = get_settings()
-            settings.detection.yolo_pose_model = model
-            settings.detection.confidence_threshold = confidence
-            settings.tracking.track_high_thresh = confidence
-            settings.tracking.new_track_thresh = confidence
-            settings.detection.imgsz = imgsz
-            settings.video.frame_skip = max(1, frame_skip)
-            settings.vision_enhancement.mode = night_mode
+            if (self._pipeline is None or 
+                not getattr(self._pipeline, '_models_initialized', False) or 
+                getattr(self, '_cached_model', None) != model):
+                settings = get_settings()
+                settings.detection.yolo_pose_model = model
+                settings.detection.confidence_threshold = confidence
+                settings.tracking.track_high_thresh = confidence
+                settings.tracking.new_track_thresh = confidence
+                settings.detection.imgsz = imgsz
+                settings.video.frame_skip = max(1, frame_skip)
+                settings.night_enhancement.mode = night_mode
 
-            pipeline = PedestrianRiskPipeline(settings=settings)
-            pipeline.initialize_models()
-            self._pipeline = pipeline
+                pipeline = PedestrianRiskPipeline(settings=settings)
+                pipeline.initialize_models()
+                self._pipeline = pipeline
+                self._cached_model = model
+            else:
+                pipeline = self._pipeline
+                pipeline.settings.detection.confidence_threshold = confidence
+                pipeline.settings.tracking.track_high_thresh = confidence
+                pipeline.settings.tracking.new_track_thresh = confidence
+                pipeline.settings.video.frame_skip = max(1, frame_skip)
+                pipeline.settings.night_enhancement.mode = night_mode
 
             # Parse source: index if digit, else path
             video_src = int(source) if source.isdigit() else source
-            cap = cv2.VideoCapture(video_src)
+            if isinstance(video_src, int):
+                cap = cv2.VideoCapture(video_src, cv2.CAP_DSHOW)
+                if not cap.isOpened():
+                    cap = cv2.VideoCapture(video_src)
+            else:
+                cap = cv2.VideoCapture(video_src)
 
             if not cap.isOpened():
                 logger.error(f"Cannot open video source: {source}")
@@ -235,7 +251,7 @@ class PipelineService:
 
                 # Run PRADAS pipeline processing
                 annotated, assessments, _ = pipeline.process_frame(frame)
-                fps = pipeline.performance_monitor.fps
+                fps = pipeline._perf_monitor.fps if hasattr(pipeline, '_perf_monitor') else 0.0
 
                 # Extract risk metrics
                 highest_risk = "NONE"
@@ -365,3 +381,4 @@ class PipelineService:
 
 # Global singleton instance
 pipeline_service = PipelineService()
+
