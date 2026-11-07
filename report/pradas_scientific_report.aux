@@ -1,0 +1,70 @@
+\relax 
+\providecommand \babel@aux [2]{\global \let \babel@toc \@gobbletwo }
+\@nameuse{bbl@beforestart}
+\catcode `:\active 
+\catcode `;\active 
+\catcode `!\active 
+\catcode `?\active 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\babel@aux{french}{}
+\@writefile{toc}{\contentsline {section}{Résumé Exécutif}{2}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction Générale \& Contexte des Systèmes ADAS}{3}{section.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Problématique Industrielle \& Sécurité Routière}{3}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Objectifs du Projet PRADAS}{3}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Architecture Globale du Système PRADAS}{4}{section.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Architecture fonctionnelle complète du pipeline de streaming temps réel PRADAS.}}{4}{figure.caption.3}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:pradas_pipeline}{{1}{4}{Architecture fonctionnelle complète du pipeline de streaming temps réel PRADAS}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Fondements Mathématiques et Deep Learning de la Détection (YOLOv11s)}{4}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Architecture du Réseau de Neurones Profond}{4}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Fonctions de Perte Multi-Tâches (Multi-Task Loss)}{5}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}1. Perte de Classification : Binary Cross-Entropy avec Label Smoothing}{5}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}2. Perte de Régression Spatiale : Complete IoU Loss ($CIoU$)}{5}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}3. Distribution Focal Loss ($DFL$)}{6}{subsubsection.3.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Dynamique d'Optimisation : Descente de Gradient et Stabilisation}{6}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Comprendre la Descente de Gradient en Apprentissage Profond}{6}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}L'Optimiseur AdamW et le Découplage du Weight Decay}{6}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Ce qui stabilise la Descente de Gradient sur les Images Complexes}{7}{subsection.4.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Évolution du Learning Rate ($\eta _t$) et transition de régime d'augmentation sur 50 époques.}}{7}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:lr_schedule}{{2}{7}{Évolution du Learning Rate ($\eta _t$) et transition de régime d'augmentation sur 50 époques}{figure.caption.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Entraînement Conjoint et Validation Expérimentale}{8}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Composition du Dataset Combiné (CrowdHuman + MOT17)}{8}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Résultats Comparatifs : Modèle v1 vs Modèle v2}{9}{subsection.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Comparaison des performances : Modèle initial v1 vs Modèle final conjoint v2.}}{9}{table.caption.5}\protected@file@percent }
+\newlabel{tab:comparison}{{1}{9}{Comparaison des performances : Modèle initial v1 vs Modèle final conjoint v2}{table.caption.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Histogramme comparatif des métriques de précision, rappel et mAP entre la version 1 et la version 2 de PRADAS.}}{9}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:model_comp_plot}{{3}{9}{Histogramme comparatif des métriques de précision, rappel et mAP entre la version 1 et la version 2 de PRADAS}{figure.caption.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Courbes d'apprentissage du modèle v2 (50 époques) : Évolution des fonctions de perte et convergence du $mAP_{50}$ à $90.09\%$.}}{10}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:train_curves_plot}{{4}{10}{Courbes d'apprentissage du modèle v2 (50 époques) : Évolution des fonctions de perte et convergence du $mAP_{50}$ à $90.09\%$}{figure.caption.7}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Suivi Multi-Objets (MOT) et Résolution des Dérives Temporelles}{10}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Formulation de l'Association de Données avec ByteTrack}{10}{subsection.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Résolution Mathématique du Problème des Boîtes Fantômes}{11}{subsection.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Perception de Profondeur Monoculaire et Géométrie Projective}{11}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Le Modèle de Caméra à Sténopé (Pinhole Camera Model)}{11}{subsection.7.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Modélisation sténopé reliant la hauteur focale, la taille réelle et la taille sur le capteur.}}{12}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:pinhole}{{5}{12}{Modélisation sténopé reliant la hauteur focale, la taille réelle et la taille sur le capteur}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Fusion Hybride avec MiDaS (Zero-Shot Monocular Depth)}{12}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Évaluation de Risque, Time-To-Collision (TTC) et Décision AEB}{12}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Formulation Physique du Time-To-Collision (TTC)}{12}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Le Polygone Trapézoïdal du Couloir de Danger (Danger Zone)}{13}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Fonction de Risque Multi-Critère et Déclenchement AEB}{13}{subsection.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Architecture Logicielle Temps Réel et Cockpit Numérique}{14}{section.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}Pile Logicielle et Concurrence Asynchrone}{14}{subsection.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.2}Interface du Cockpit Automobile (Digital Cockpit HUD)}{14}{subsection.9.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Captures d'écran de l'interface Cockpit Numérique de PRADAS dans différentes conditions opérationnelles.}}{15}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:cockpit_screens}{{6}{15}{Captures d'écran de l'interface Cockpit Numérique de PRADAS dans différentes conditions opérationnelles}{figure.caption.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {10}Conclusion Générale et Perspectives de Recherche}{15}{section.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Bilan du Projet}{15}{subsection.10.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}Perspectives d'Évolution}{15}{subsection.10.2}\protected@file@percent }
+\bibcite{yolov11}{1}
+\bibcite{crowdhuman}{2}
+\bibcite{mot17}{3}
+\bibcite{bytetrack}{4}
+\bibcite{midas}{5}
+\bibcite{adamw}{6}
+\bibcite{ciou}{7}
+\bibcite{dfl}{8}
+\bibcite{euroncap}{9}
+\gdef \@abspage@last{18}
