@@ -107,8 +107,9 @@ class FrameVisualizer:
         if self.show_danger_zone and danger_zone_px and len(danger_zone_px) >= 3:
             self._draw_danger_zone(vis, danger_zone_px)
 
-        # 2. Draw each tracked pedestrian
-        for ped in tracked_pedestrians:
+        # 2. Draw each tracked pedestrian (only if present in the current frame to prevent ghost boxes)
+        current_peds = [p for p in tracked_pedestrians if p.last_seen_frame == frame_index]
+        for ped in current_peds:
             risk = risk_map.get(ped.track_id)
             intent = intent_results.get(ped.track_id)
             self._draw_pedestrian(vis, ped, risk, intent)
@@ -120,7 +121,7 @@ class FrameVisualizer:
 
         # 4. Draw HUD info
         self._draw_hud(vis, fps, frame_index, device, frame_time_ms,
-                       len(tracked_pedestrians), len(high_risks))
+                       len(current_peds), len(high_risks))
 
         return vis
 
@@ -170,6 +171,8 @@ class FrameVisualizer:
 
         if risk:
             label_parts.append(risk.risk_level.value)
+            if risk.distance_meters is not None:
+                label_parts.append(f"{risk.distance_meters:.1f}m")
             if risk.ttc_seconds is not None and risk.ttc_confidence > 0.3:
                 label_parts.append(f"TTC:{risk.ttc_seconds:.1f}s*")
 

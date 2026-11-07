@@ -623,8 +623,8 @@
 
         <div class="control-group">
             <span class="control-label">Confiance :</span>
-            <input type="range" id="confRange" min="0.10" max="0.70" step="0.05" value="0.25" style="width: 80px;">
-            <span id="confValue" style="font-weight: bold; width: 35px;">0.25</span>
+            <input type="range" id="confRange" min="0.15" max="0.80" step="0.05" value="0.40" style="width: 80px;">
+            <span id="confValue" style="font-weight: bold; width: 35px;">0.40</span>
         </div>
 
         <div class="control-group">
@@ -782,6 +782,12 @@
             const banner = document.getElementById('fcwBanner');
             banner.className = 'fcw-banner';
             document.getElementById('fcwText').textContent = 'SYSTÈME EN ATTENTE — SÉLECTIONNEZ UNE SOURCE';
+            document.getElementById('hudPedCount').textContent = '0';
+            document.getElementById('activePedCountBadge').textContent = '0';
+            document.getElementById('ttcValue').textContent = 'SAFE';
+            document.getElementById('ttcValue').className = 'ttc-val';
+            document.getElementById('pedestriansList').innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">Session arrêtée — En attente</div>';
+            drawRadar([]);
             document.getElementById('videoFeed').src = '/video_feed?t=' + Date.now();
         });
 

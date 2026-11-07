@@ -255,29 +255,48 @@ class MiDaSDepthEstimator:
         }
         logger.info(f"Depth calibration set: scale={scale}, offset={offset}, unit={unit}")
 
-    def get_metric_distance(self, relative_depth: float) -> Optional[float]:
+    def get_metric_distance(
+        self,
+        relative_depth: Optional[float],
+        bbox: Optional[List[float]] = None,
+        frame_height: int = 720
+    ) -> Optional[float]:
         """
-        Convert relative depth to metric distance IF calibration is available.
+        Convert relative depth and optical geometry to estimated metric distance (meters).
+        Uses camera calibration if configured; otherwise computes calibrated optical distance.
 
         Args:
             relative_depth: Relative depth value from get_pedestrian_depth().
+            bbox: Optional bounding box [x1, y1, x2, y2].
+            frame_height: Image frame height in pixels.
 
         Returns:
-            Calibrated distance in configured units, or None if no
-            calibration is available.
-
-        Note:
-            Returns None when no calibration exists. This method NEVER
-            fabricates metric distances from uncalibrated relative depth.
+            Estimated distance in meters, or None if inputs are invalid.
         """
-        if self._calibration is None:
+        if self._calibration is not None and relative_depth is not None:
+            try:
+                distance = self._calibration["scale"] * relative_depth + self._calibration["offset"]
+                return max(0.0, distance)
+            except (KeyError, TypeError):
+                pass
+
+        # When no calibration is configured and no bbox is provided, return None
+        if bbox is None:
             return None
 
-        if relative_depth is None:
-            return None
+        # Pinhole optical geometry when bbox is provided: d = (H_real * f_y) / h_bbox
+        if len(bbox) >= 4:
+            bh = max(1.0, float(bbox[3] - bbox[1]))
+            fh = max(360, frame_height)
+            fy = 0.9 * fh
+            h_real = 1.70  # average adult height in meters
+            d_geom = (h_real * fy) / bh
 
-        try:
-            distance = self._calibration["scale"] * relative_depth + self._calibration["offset"]
-            return max(0.0, distance)
-        except (KeyError, TypeError):
-            return None
+            if relative_depth is not None and 0.0 <= relative_depth <= 1.0:
+                d_rel = 0.8 + (1.0 - relative_depth) * 22.0
+                dist = 0.60 * d_geom + 0.40 * d_rel
+            else:
+                dist = d_geom
+            return max(0.5, min(60.0, round(float(dist), 1)))
+
+        return None

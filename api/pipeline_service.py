@@ -171,6 +171,8 @@ class PipelineService:
             self._highest_risk = "NONE"
             self._lowest_ttc = None
             self._latest_jpeg = None
+            if self._pipeline:
+                self._pipeline.reset()
             logger.info("Pipeline service stopped.")
         return True
 
@@ -235,6 +237,9 @@ class PipelineService:
             frame_idx = 0
             base_speed = 50.0
 
+            # Ensure clean state for new session (no leftover tracks from previous video/webcam)
+            pipeline.reset()
+
             while not self._stop_event.is_set():
                 ret, frame = cap.read()
                 if not ret or frame is None:
@@ -253,11 +258,18 @@ class PipelineService:
                 annotated, assessments, _ = pipeline.process_frame(frame)
                 fps = pipeline._perf_monitor.fps if hasattr(pipeline, '_perf_monitor') else 0.0
 
+                # Only keep assessments for pedestrians actually seen in the current frame
+                seen_track_ids = {
+                    p.track_id for p in pipeline._tracker._tracks.values()
+                    if p.last_seen_frame == frame_idx
+                } if pipeline._tracker else set()
+                current_assessments = [a for a in assessments if a.track_id in seen_track_ids]
+
                 # Extract risk metrics
                 highest_risk = "NONE"
                 lowest_ttc = None
 
-                for a in assessments:
+                for a in current_assessments:
                     level = a.risk_level.value if hasattr(a.risk_level, 'value') else str(a.risk_level)
                     if level == "HIGH":
                         highest_risk = "HIGH"
@@ -308,7 +320,7 @@ class PipelineService:
                     "frame_index": frame_idx,
                     "fps": round(fps, 1),
                     "speed_kmh": round(base_speed, 1),
-                    "active_pedestrians_count": len(assessments),
+                    "active_pedestrians_count": len(current_assessments),
                     "highest_risk": highest_risk,
                     "lowest_ttc": round(lowest_ttc, 2) if lowest_ttc is not None else None,
                     "collision_warning": highest_risk == "HIGH" or (lowest_ttc is not None and lowest_ttc < 2.5),
@@ -322,7 +334,7 @@ class PipelineService:
                             "intent": a.intent_state.value if hasattr(a.intent_state, 'value') else str(a.intent_state),
                             "danger_zone": a.danger_zone_status.value if hasattr(a.danger_zone_status, 'value') else str(a.danger_zone_status),
                         }
-                        for a in assessments
+                        for a in current_assessments
                     ]
                 }
 

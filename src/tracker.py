@@ -382,20 +382,25 @@ class PedestrianTracker:
         return max(self._tracks.keys()) + 1
 
     def _expire_tracks(self, current_frame: int) -> None:
-        """Remove tracks that haven't been seen for too long."""
+        """Remove tracks that haven't been seen for too long or belong to past sessions."""
         expired = [
             tid for tid, track in self._tracks.items()
-            if current_frame - track.last_seen_frame > self.config.track_buffer
+            if (current_frame < track.last_seen_frame) or (current_frame - track.last_seen_frame > self.config.track_buffer)
         ]
         for tid in expired:
             del self._tracks[tid]
             logger.debug(f"Track {tid} expired at frame {current_frame}")
 
-    def _get_active_tracks(self, current_frame: int) -> List[TrackedPedestrian]:
-        """Get tracks seen within the track buffer."""
+    def _get_active_tracks(self, current_frame: int, only_current: bool = False) -> List[TrackedPedestrian]:
+        """Get tracks seen within the track buffer and not in the future."""
+        if only_current:
+            return [
+                track for track in self._tracks.values()
+                if track.last_seen_frame == current_frame
+            ]
         return [
             track for track in self._tracks.values()
-            if current_frame - track.last_seen_frame <= self.config.track_buffer
+            if 0 <= (current_frame - track.last_seen_frame) <= self.config.track_buffer
         ]
 
     def get_track(self, track_id: int) -> Optional[TrackedPedestrian]:
@@ -414,4 +419,8 @@ class PedestrianTracker:
         WARNING: Track IDs are not guaranteed to be globally unique after reset.
         """
         self._tracks.clear()
+        self._frame_count = 0
+        if self._model is not None and hasattr(self._model, 'predictor') and self._model.predictor is not None:
+            if hasattr(self._model.predictor, 'trackers'):
+                self._model.predictor.trackers.clear()
         logger.info("Tracker reset. All tracks cleared.")

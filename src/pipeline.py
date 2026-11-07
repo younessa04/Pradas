@@ -304,8 +304,11 @@ class PedestrianRiskPipeline:
                         # Update track history with depth
                         if rel_depth is not None:
                             ped.history.depths.append(rel_depth)
-                        # Metric distance (only if calibrated)
-                        metric_dist = self._depth_estimator.get_metric_distance(rel_depth)
+                        # Metric distance (calibrated or optical geometry)
+                        h_frame = frame.shape[0] if frame is not None else 720
+                        metric_dist = self._depth_estimator.get_metric_distance(
+                            rel_depth, bbox=ped.bbox, frame_height=h_frame
+                        )
                         metric_distances[ped.track_id] = metric_dist
 
         # Stage 5: Intent analysis
@@ -461,6 +464,25 @@ class PedestrianRiskPipeline:
             logger.info("\n" + self._perf_monitor.get_summary())
 
         logger.info("Pipeline cleanup complete.")
+
+    def reset(self) -> None:
+        """Reset all tracking and risk history between sessions or source switches."""
+        self._frame_index = 0
+        if self._tracker:
+            self._tracker.reset()
+        if self._risk_engine:
+            self._risk_engine._risk_history.clear()
+            self._risk_engine._previous_risk.clear()
+            self._risk_engine._last_alert_time.clear()
+        if self._intent_analyzer:
+            self._intent_analyzer._trajectories.clear()
+            self._intent_analyzer._state_histories.clear()
+        if self._detector and hasattr(self._detector, '_model') and self._detector._model is not None:
+            model = self._detector._model
+            if hasattr(model, 'predictor') and model.predictor is not None:
+                if hasattr(model.predictor, 'trackers'):
+                    model.predictor.trackers.clear()
+        logger.info("Pipeline state and tracks fully reset.")
 
     @property
     def is_running(self) -> bool:

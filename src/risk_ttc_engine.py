@@ -276,6 +276,31 @@ class PedestrianRiskEngine:
             self.config.weight_confidence * conf_score
         )
 
+        # --- Proximity Hazard Override (Critical for ADAS safety) ---
+        # If pedestrian is within 3.5m or occupying a large portion of the camera view,
+        # immediate collision danger is present regardless of stationary pose.
+        if metric_distance is not None:
+            if metric_distance < 2.0:
+                dz_score = max(dz_score, 1.0)
+                risk_score = max(risk_score, 0.85)
+                reasons.append("CRITICAL_PROXIMITY (<2m)")
+            elif metric_distance < 3.5:
+                dz_score = max(dz_score, 0.8)
+                risk_score = max(risk_score, 0.65)
+                reasons.append("HIGH_PROXIMITY (<3.5m)")
+            elif metric_distance < 6.0:
+                dz_score = max(dz_score, 0.5)
+                risk_score = max(risk_score, 0.45)
+                reasons.append("MEDIUM_PROXIMITY (<6m)")
+        elif relative_depth is not None and relative_depth > 0.60:
+            dz_score = max(dz_score, 0.8)
+            risk_score = max(risk_score, 0.70)
+            reasons.append("HIGH_DEPTH_PROXIMITY")
+        elif ped.height > 260:
+            dz_score = max(dz_score, 0.75)
+            risk_score = max(risk_score, 0.65)
+            reasons.append("LARGE_BBOX_PROXIMITY")
+
         # Clamp to [0, 1]
         risk_score = max(0.0, min(1.0, risk_score))
         assessment.risk_score = risk_score
