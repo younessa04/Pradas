@@ -80,6 +80,10 @@ def create_app() -> FastAPI:
         pipeline_service.stop()
 
     # ─── 1. Cockpit Web UI ──────────────────────────────────────────────────
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def favicon():
+        return HTMLResponse(content="", status_code=204)
+
     @app.get("/", response_class=HTMLResponse)
     async def get_dashboard() -> HTMLResponse:
         """Serve the modern automotive digital cockpit dashboard."""
