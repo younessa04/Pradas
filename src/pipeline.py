@@ -252,18 +252,28 @@ class PedestrianRiskPipeline:
             logger.error(f"Video writer setup error: {e}")
             self._writer = None
 
-    def process_frame(self, frame: np.ndarray) -> tuple:
+    def process_frame(
+        self,
+        frame: np.ndarray,
+        frame_index: Optional[int] = None
+    ) -> tuple:
         """
         Process a single frame through the full pipeline.
 
         Args:
             frame: BGR input frame.
+            frame_index: Optional frame index override. If None, auto-increments self._frame_index.
 
         Returns:
             Tuple of (annotated_frame, risk_assessments, frame_index).
         """
         if frame is None or frame.size == 0:
             return frame, [], self._frame_index
+
+        if frame_index is not None:
+            self._frame_index = frame_index
+        else:
+            self._frame_index += 1
 
         self._perf_monitor.start_frame()
         timestamp = time.time()
@@ -394,6 +404,7 @@ class PedestrianRiskPipeline:
 
         self._running = True
         self._frame_index = 0
+        raw_frame_idx = 0
         frame_skip = max(1, self.settings.video.frame_skip)
 
         logger.info("=" * 60)
@@ -412,19 +423,19 @@ class PedestrianRiskPipeline:
                     logger.info("End of video stream.")
                     break
 
-                self._frame_index += 1
+                raw_frame_idx += 1
 
                 # Frame skipping
-                if frame_skip > 1 and (self._frame_index % frame_skip) != 0:
+                if frame_skip > 1 and (raw_frame_idx % frame_skip) != 0:
                     continue
 
                 # Max frames limit
-                if max_frames and self._frame_index > max_frames:
+                if max_frames and raw_frame_idx > max_frames:
                     logger.info(f"Reached max_frames limit: {max_frames}")
                     break
 
                 # Process frame
-                annotated, assessments, _ = self.process_frame(frame)
+                annotated, assessments, _ = self.process_frame(frame, frame_index=raw_frame_idx)
 
                 # Write output video
                 if self._writer and annotated is not None:

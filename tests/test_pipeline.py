@@ -64,8 +64,7 @@ class TestPipelineFlow:
 
         # Process a sequence of frames
         for f in range(1, 10):
-            mock_pipeline._frame_index = f
-            annotated, assessments, idx = mock_pipeline.process_frame(synthetic_frame)
+            annotated, assessments, idx = mock_pipeline.process_frame(synthetic_frame, frame_index=f)
 
             assert annotated.shape == (480, 640, 3)
             assert idx == f
@@ -75,6 +74,10 @@ class TestPipelineFlow:
         # Check performance monitor recorded the frames
         assert mock_pipeline._perf_monitor.total_frames == 9
         assert mock_pipeline._perf_monitor.fps > 0
+
+        # Test auto-increment when frame_index is omitted
+        _, _, next_idx = mock_pipeline.process_frame(synthetic_frame)
+        assert next_idx == 10
 
     def test_process_empty_frame(self, mock_pipeline):
         empty = np.empty((0, 0, 3), dtype=np.uint8)

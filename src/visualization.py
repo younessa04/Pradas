@@ -114,8 +114,9 @@ class FrameVisualizer:
             intent = intent_results.get(ped.track_id)
             self._draw_pedestrian(vis, ped, risk, intent)
 
-        # 3. Draw HIGH risk alert banner
-        high_risks = [a for a in risk_assessments if a.risk_level == RiskLevel.HIGH]
+        # 3. Draw HIGH risk alert banner (only for active pedestrians in current frame)
+        current_track_ids = {p.track_id for p in current_peds}
+        high_risks = [a for a in risk_assessments if a.track_id in current_track_ids and a.risk_level == RiskLevel.HIGH]
         if high_risks:
             self._draw_alert_banner(vis, len(high_risks))
 

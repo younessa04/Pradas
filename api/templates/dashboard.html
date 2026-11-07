@@ -899,6 +899,7 @@
             // Speedometer & HUD
             document.getElementById('speedValue').textContent = Math.round(data.speed_kmh);
             document.getElementById('hudFps').textContent = data.fps.toFixed(1);
+            if (data.latency_ms !== undefined) document.getElementById('hudLatency').textContent = data.latency_ms + ' ms';
             document.getElementById('hudPedCount').textContent = data.active_pedestrians_count;
             document.getElementById('activePedCountBadge').textContent = data.active_pedestrians_count;
             document.getElementById('statFrameIdx').textContent = '#' + data.frame_index;

@@ -245,6 +245,8 @@ class PipelineService:
                 if not ret or frame is None:
                     if loop_video and not source.isdigit():
                         cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                        pipeline.reset()
+                        frame_idx = 0
                         continue
                     else:
                         logger.info("End of video stream.")
@@ -254,14 +256,15 @@ class PipelineService:
                 if frame_skip > 1 and (frame_idx % frame_skip) != 0:
                     continue
 
-                # Run PRADAS pipeline processing
-                annotated, assessments, _ = pipeline.process_frame(frame)
+                # Run PRADAS pipeline processing with synchronized frame index
+                annotated, assessments, current_idx = pipeline.process_frame(frame, frame_index=frame_idx)
                 fps = pipeline._perf_monitor.fps if hasattr(pipeline, '_perf_monitor') else 0.0
+                latency_ms = pipeline._perf_monitor.frame_time_ms if hasattr(pipeline, '_perf_monitor') else 0.0
 
                 # Only keep assessments for pedestrians actually seen in the current frame
                 seen_track_ids = {
                     p.track_id for p in pipeline._tracker._tracks.values()
-                    if p.last_seen_frame == frame_idx
+                    if p.last_seen_frame == current_idx
                 } if pipeline._tracker else set()
                 current_assessments = [a for a in assessments if a.track_id in seen_track_ids]
 
@@ -319,6 +322,7 @@ class PipelineService:
                     "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                     "frame_index": frame_idx,
                     "fps": round(fps, 1),
+                    "latency_ms": round(latency_ms, 0),
                     "speed_kmh": round(base_speed, 1),
                     "active_pedestrians_count": len(current_assessments),
                     "highest_risk": highest_risk,

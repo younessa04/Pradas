@@ -55,3 +55,4 @@ def test_api_pipeline_stop(client):
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
+
