@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRADAS — Tableau de Bord ADAS Automobile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070a12;
+            --panel-bg: rgba(13, 19, 33, 0.82);
+            --panel-border: rgba(0, 240, 255, 0.22);
+            --cyan: #00f0ff;
+            --cyan-glow: rgba(0, 240, 255, 0.45);
+            --amber: #f59e0b;
+            --amber-glow: rgba(245, 158, 11, 0.4);
+            --red: #ef4444;
+            --red-glow: rgba(239, 68, 68, 0.55);
+            --green: #10b981;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Rajdhani', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.08) 0%, transparent 60%),
+                linear-gradient(to bottom, #090e1a 0%, #05070c 100%);
+        }
+
+        /* Top Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 28px;
+            background: rgba(10, 15, 26, 0.95);
+            border-bottom: 1px solid var(--panel-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--cyan), #3b82f6);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--cyan-glow);
+        }
+
+        .brand-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            color: var(--cyan);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .top-indicators {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .badge-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--panel-border);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 10px var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        .dot.disconnected {
+            background: var(--red);
+            box-shadow: 0 0 10px var(--red);
+        }
+
+        /* Forward Collision Warning HUD Alert */
+        .fcw-banner {
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(16, 185, 129, 0.15);
+            border-bottom: 2px solid var(--green);
+            color: var(--green);
+            transition: all 0.3s ease;
+        }
+
+        .fcw-banner.caution {
+            background: rgba(245, 158, 11, 0.25);
+            border-bottom: 2px solid var(--amber);
+            color: var(--amber);
+            box-shadow: 0 0 20px var(--amber-glow);
+        }
+
+        .fcw-banner.critical {
+            background: rgba(239, 68, 68, 0.35);
+            border-bottom: 2px solid var(--red);
+            color: #fff;
+            animation: flash-red 0.5s infinite alternate;
+            box-shadow: 0 0 30px var(--red-glow);
+        }
+
+        @keyframes flash-red {
+            from { background: rgba(239, 68, 68, 0.4); }
+            to { background: rgba(239, 68, 68, 0.85); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* Cockpit Grid Layout */
+        .cockpit-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            gap: 16px;
+            padding: 16px 24px;
+            flex: 1;
+        }
+
+        /* Cards and Panels */
+        .hud-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 18px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hud-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--cyan);
+            text-transform: uppercase;
+        }
+
+        /* Center Video Display */
+        .video-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            border: 2px solid var(--panel-border);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+            min-height: 520px;
+        }
+
+        #videoFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .video-hud-overlay {
+            position: absolute;
+            top: 14px;
+            left: 16px;
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .hud-pill {
+            background: rgba(0, 0, 0, 0.65);
+            border: 1px solid var(--panel-border);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Speedometer & TTC Gauges */
+        .gauge-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .speedometer-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .speed-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 6px solid rgba(255, 255, 255, 0.08);
+            border-top-color: var(--cyan);
+            border-right-color: var(--cyan);
+            box-shadow: 0 0 25px var(--cyan-glow);
+            position: absolute;
+            transform: rotate(-45deg);
+            transition: all 0.3s ease;
+        }
+
+        .speed-text {
+            text-align: center;
+            z-index: 2;
+        }
+
+        .speed-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+            text-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        .speed-unit {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--cyan);
+            letter-spacing: 2px;
+        }
+
+        .ttc-container {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .ttc-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--green);
+            transition: color 0.3s;
+        }
+
+        .ttc-val.warn { color: var(--amber); }
+        .ttc-val.alert { color: var(--red); animation: pulse 0.6s infinite; }
+
+        /* Bird's Eye Radar */
+        .radar-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #radarCanvas {
+            background: radial-gradient(circle, #0e1726 0%, #060911 100%);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            width: 100%;
+            height: 200px;
+        }
+
+        /* Pedestrians List Table */
+        .ped-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .ped-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .ped-list::-webkit-scrollbar-thumb {
+            background: var(--panel-border);
+            border-radius: 4px;
+        }
+
+        .ped-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .ped-card.risk-HIGH {
+            border-color: var(--red);
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .ped-card.risk-MEDIUM {
+            border-color: var(--amber);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .tag-risk {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .tag-HIGH { background: var(--red); color: #fff; }
+        .tag-MEDIUM { background: var(--amber); color: #000; }
+        .tag-LOW { background: var(--green); color: #fff; }
+
+        /* Control Panel Bottom */
+        .controls-bar {
+            background: rgba(10, 15, 26, 0.95);
+            border-top: 1px solid var(--panel-border);
+            padding: 14px 28px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        select, input[type="range"] {
+            background: #111827;
+            border: 1px solid var(--panel-border);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .btn-action {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 10px 24px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #00f0ff, #0284c7);
+            color: #030712;
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--cyan);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #ef4444, #991b1b);
+            color: #fff;
+            box-shadow: 0 0 15px var(--red-glow);
+        }
+
+        .btn-stop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px var(--red);
+        }
+
+        .btn-icon {
+            background: #111827;
+            border: 1px solid var(--panel-border);
+            color: var(--cyan);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: var(--cyan);
+            color: #000;
+        }
+
+        .btn-icon.muted {
+            color: var(--red);
+            border-color: var(--red);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="brand">
+            <div class="brand-logo">▲</div>
+            <div>
+                <div class="brand-title">PRADAS</div>
+                <div class="brand-subtitle">Cockpit Numérique & Détection Piéton en Temps Réel</div>
+            </div>
+        </div>
+
+        <div class="top-indicators">
+            <div class="badge-status">
+                <span class="dot" id="wsDot"></span>
+                <span id="wsStatus">WEBSOCKET ACTIF</span>
+            </div>
+            <div class="badge-status">
+                <span>MODÈLE:</span>
+                <strong id="activeModelTag" style="color: var(--cyan);">YOLOv11s Joint</strong>
+            </div>
+            <button class="btn-icon" id="audioToggleBtn" title="Activer/Désactiver l'alerte sonore">🔊</button>
+        </div>
+    </header>
+
+    <!-- Collision Alert HUD Bar -->
+    <div class="fcw-banner" id="fcwBanner">
+        <span>🟢</span>
+        <span id="fcwText">SYSTÈME ADAS ACTIF — ROUTE DÉGAGÉE</span>
+    </div>
+
+    <!-- Main Digital Cockpit Grid -->
+    <main class="cockpit-grid">
+
+        <!-- Left Panel: Vehicle Dynamics & Gauges -->
+        <aside class="hud-panel">
+            <div class="panel-header">
+                <span>Dynamique Véhicule</span>
+                <span style="color: var(--green);">[AUTO]</span>
+            </div>
+
+            <div class="gauge-section">
+                <div class="speedometer-container">
+                    <div class="speed-circle" id="speedCircle"></div>
+                    <div class="speed-text">
+                        <div class="speed-val" id="speedValue">48</div>
+                        <div class="speed-unit">KM / H</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ttc-container">
+                <div style="font-size: 12px; color: var(--text-muted); letter-spacing: 1px;">TIME-TO-COLLISION (TTC)</div>
+                <div class="ttc-val" id="ttcValue">SAFE</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Seuil d'urgence critique : &lt; 2.5s</div>
+            </div>
+
+            <div class="radar-box">
+                <div class="panel-header" style="width: 100%; margin-bottom: 8px;">
+                    <span>Radar Proximité 2D</span>
+                </div>
+                <canvas id="radarCanvas" width="280" height="200"></canvas>
+            </div>
+        </aside>
+
+        <!-- Center: Live Vision Feed -->
+        <section class="video-container">
+            <div class="video-hud-overlay">
+                <div class="hud-pill"><span>FPS:</span> <strong id="hudFps">0.0</strong></div>
+                <div class="hud-pill"><span>PIÉTONS:</span> <strong id="hudPedCount">0</strong></div>
+                <div class="hud-pill"><span>LATENCE:</span> <strong id="hudLatency">-- ms</strong></div>
+            </div>
+            <img id="videoFeed" src="/video_feed" alt="Flux Vidéo PRADAS">
+        </section>
+
+        <!-- Right Panel: Pedestrians Telemetry & Threat Assessment -->
+        <aside class="hud-panel">
+            <div class="panel-header">
+                <span>Piétons Détectés</span>
+                <span id="activePedCountBadge" style="color: var(--cyan);">0</span>
+            </div>
+
+            <div class="ped-list" id="pedestriansList">
+                <div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
+                    Aucun piéton détecté sur la trajectoire
+                </div>
+            </div>
+
+            <div class="panel-header" style="margin-top: auto;">
+                <span>Performances Système</span>
+            </div>
+            <div style="font-size: 13px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Frame Inférence :</span>
+                    <strong id="statFrameIdx">#0</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Moteur Inférence :</span>
+                    <span style="color: var(--cyan);" id="statEngine">YOLOv11 + MiDaS</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Freinage Urgence (AEB) :</span>
+                    <span id="statAEB" style="color: var(--green);">VEILLE</span>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- Bottom Controls -->
+    <footer class="controls-bar">
+        <div class="control-group">
+            <span class="control-label">Source :</span>
+            <select id="sourceSelect">
+                <option value="0">📷 Caméra WebCam PC (Index 0)</option>
+                <option value="data/input/MOT17-13.mp4">🎬 MOT17-13.mp4 (Jour / Urbain)</option>
+                <option value="data/input/MOT17-04-night.mp4">🎬 MOT17-04-night.mp4 (Nuit)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Modèle :</span>
+            <select id="modelSelect">
+                <option value="models/best_v2.pt">YOLOv11s — best_v2.pt (Recommandé, 90.1% mAP)</option>
+                <option value="models/best.pt">YOLOv8s — best.pt (CrowdHuman, 86.8% mAP)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Confiance :</span>
+            <input type="range" id="confRange" min="0.10" max="0.70" step="0.05" value="0.25" style="width: 80px;">
+            <span id="confValue" style="font-weight: bold; width: 35px;">0.25</span>
+        </div>
+
+        <div class="control-group">
+            <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <input type="checkbox" id="loopCheck" checked>
+                <span>Boucler vidéo</span>
+            </label>
+        </div>
+
+        <div class="control-group" style="margin-left: auto;">
+            <button class="btn-action btn-start" id="startBtn">▶ Démarrer ADAS</button>
+            <button class="btn-action btn-stop" id="stopBtn">⏹ Arrêter</button>
+        </div>
+    </footer>
+
+    <!-- Audio Beep Generator & Dashboard Controller -->
+    <script>
+        // Web Audio API for ADAS collision beep
+        let audioCtx = null;
+        let isMuted = false;
+        let lastBeepTime = 0;
+
+        function playCollisionBeep() {
+            if (isMuted) return;
+            const now = Date.now();
+            if (now - lastBeepTime < 450) return; // Throttle beeps
+            lastBeepTime = now;
+
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880 Hz High Pitch Alarm
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } catch (e) {
+                console.log("Audio not allowed yet:", e);
+            }
+        }
+
+        document.getElementById('audioToggleBtn').addEventListener('click', () => {
+            isMuted = !isMuted;
+            const btn = document.getElementById('audioToggleBtn');
+            btn.textContent = isMuted ? '🔇' : '🔊';
+            btn.classList.toggle('muted', isMuted);
+        });
+
+        // Confidence slider
+        const confRange = document.getElementById('confRange');
+        const confValue = document.getElementById('confValue');
+        confRange.addEventListener('input', (e) => confValue.textContent = parseFloat(e.target.value).toFixed(2));
+
+        // Load Sources and Models from API
+        async function loadOptions() {
+            try {
+                const res = await fetch('/api/sources');
+                if (res.ok) {
+                    const sources = await res.json();
+                    const sel = document.getElementById('sourceSelect');
+                    sel.innerHTML = '';
+                    sources.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.name;
+                        sel.appendChild(opt);
+                    });
+                }
+                const resM = await fetch('/api/models');
+                if (resM.ok) {
+                    const models = await resM.json();
+                    const selM = document.getElementById('modelSelect');
+                    selM.innerHTML = '';
+                    models.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m.id;
+                        opt.textContent = m.name;
+                        if (m.recommended) opt.selected = true;
+                        selM.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.warn("Could not load sources dynamically:", err);
+            }
+        }
+        loadOptions();
+
+        // Start / Stop Pipeline
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            const source = document.getElementById('sourceSelect').value;
+            const model = document.getElementById('modelSelect').value;
+            const confidence = parseFloat(document.getElementById('confRange').value);
+            const loopVideo = document.getElementById('loopCheck').checked;
+
+            try {
+                const res = await fetch('/api/pipeline/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        source: source,
+                        model: model,
+                        confidence: confidence,
+                        imgsz: 960,
+                        frame_skip: 1,
+                        night_mode: "auto",
+                        loop_video: loopVideo
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('videoFeed').src = '/video_feed?' + Date.now();
+                }
+            } catch (e) {
+                alert("Erreur de démarrage : " + e);
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', async () => {
+            await fetch('/api/pipeline/stop', {method: 'POST'});
+        });
+
+        // Radar Canvas Renderer
+        const radarCanvas = document.getElementById('radarCanvas');
+        const ctx = radarCanvas.getContext('2d');
+
+        function drawRadar(pedestrians = []) {
+            const w = radarCanvas.width;
+            const h = radarCanvas.height;
+            const cx = w / 2;
+            const cy = h - 15;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Radar distance arcs (10m, 20m, 30m, 40m)
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
+            ctx.lineWidth = 1;
+            [40, 80, 120, 160].forEach((r, idx) => {
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, Math.PI, 0, false);
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(0, 240, 255, 0.4)';
+                ctx.font = '10px Rajdhani';
+                ctx.fillText((idx + 1) * 10 + 'm', cx + 4, cy - r + 10);
+            });
+
+            // Danger corridor (cone in front of vehicle)
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.08)';
+            ctx.beginPath();
+            ctx.moveTo(cx - 20, cy);
+            ctx.lineTo(cx - 50, cy - 170);
+            ctx.lineTo(cx + 50, cy - 170);
+            ctx.lineTo(cx + 20, cy);
+            ctx.closePath();
+            ctx.fill();
+
+            // Ego Vehicle symbol
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillRect(cx - 10, cy - 8, 20, 14);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 8px Orbitron';
+            ctx.fillText('CAR', cx - 9, cy + 2);
+
+            // Plot Pedestrians
+            pedestrians.forEach(p => {
+                const dist = p.distance_m || 20; // in meters
+                const r = Math.min(180, (dist / 45) * 160);
+                // Pseudo lateral angle from track_id
+                const angleOffset = ((p.track_id % 7) - 3) * 0.18;
+                const angle = -Math.PI / 2 + angleOffset;
+
+                const px = cx + r * Math.sin(angleOffset * 1.5);
+                const py = cy - r;
+
+                // Color based on risk
+                let color = '#10b981';
+                if (p.risk_level === 'HIGH') color = '#ef4444';
+                else if (p.risk_level === 'MEDIUM') color = '#f59e0b';
+
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(px, py, 5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 8;
+
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px Rajdhani';
+                ctx.fillText('#' + p.track_id, px + 7, py + 3);
+                ctx.shadowBlur = 0;
+            });
+        }
+        drawRadar();
+
+        // WebSocket Telemetry Connection
+        let ws = null;
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/alerts`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                document.getElementById('wsDot').classList.remove('disconnected');
+                document.getElementById('wsStatus').textContent = 'WEBSOCKET ACTIF';
+            };
+
+            ws.onclose = () => {
+                document.getElementById('wsDot').classList.add('disconnected');
+                document.getElementById('wsStatus').textContent = 'RECONNEXION...';
+                setTimeout(connectWebSocket, 2000);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.event_type === 'telemetry_update') {
+                        updateTelemetry(data);
+                    }
+                } catch (e) {
+                    console.error("Telemetry parse error:", e);
+                }
+            };
+        }
+        connectWebSocket();
+
+        // Update Dashboard Elements on Telemetry Stream
+        function updateTelemetry(data) {
+            // Speedometer & HUD
+            document.getElementById('speedValue').textContent = Math.round(data.speed_kmh);
+            document.getElementById('hudFps').textContent = data.fps.toFixed(1);
+            document.getElementById('hudPedCount').textContent = data.active_pedestrians_count;
+            document.getElementById('activePedCountBadge').textContent = data.active_pedestrians_count;
+            document.getElementById('statFrameIdx').textContent = '#' + data.frame_index;
+
+            // TTC Display
+            const ttcEl = document.getElementById('ttcValue');
+            if (data.lowest_ttc !== null && data.lowest_ttc !== undefined) {
+                ttcEl.textContent = data.lowest_ttc.toFixed(1) + 's';
+                ttcEl.className = 'ttc-val ' + (data.lowest_ttc < 2.5 ? 'alert' : data.lowest_ttc < 5.0 ? 'warn' : '');
+            } else {
+                ttcEl.textContent = 'SAFE';
+                ttcEl.className = 'ttc-val';
+            }
+
+            // FCW Alert Banner & Audio
+            const banner = document.getElementById('fcwBanner');
+            const bannerText = document.getElementById('fcwText');
+            const aebEl = document.getElementById('statAEB');
+
+            if (data.highest_risk === 'HIGH' || (data.lowest_ttc !== null && data.lowest_ttc < 2.5)) {
+                banner.className = 'fcw-banner critical';
+                bannerText.textContent = '🚨 ALERTE COLLISION IMMINENTE — FREINAGE D\'URGENCE ACTIF !';
+                aebEl.textContent = 'FREINAGE ACTIF';
+                aebEl.style.color = 'var(--red)';
+                playCollisionBeep();
+            } else if (data.highest_risk === 'MEDIUM') {
+                banner.className = 'fcw-banner caution';
+                bannerText.textContent = '⚠️ ATTENTION — PIÉTON DANS LA ZONE DE CONDUITE';
+                aebEl.textContent = 'ALERTE';
+                aebEl.style.color = 'var(--amber)';
+            } else {
+                banner.className = 'fcw-banner';
+                bannerText.textContent = '🟢 SYSTÈME ADAS ACTIF — ROUTE DÉGAGÉE';
+                aebEl.textContent = 'VEILLE';
+                aebEl.style.color = 'var(--green)';
+            }
+
+            // Render Radar
+            drawRadar(data.pedestrians);
+
+            // Render Pedestrians Cards
+            const pedList = document.getElementById('pedestriansList');
+            if (!data.pedestrians || data.pedestrians.length === 0) {
+                pedList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 30px 10px;">Aucun piéton détecté sur la trajectoire</div>';
+            } else {
+                pedList.innerHTML = '';
+                data.pedestrians.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = `ped-card risk-${p.risk_level}`;
+                    card.innerHTML = `
+                        <div>
+                            <strong>Piéton #${p.track_id}</strong>
+                            <div style="font-size: 11px; color: var(--text-muted);">
+                                Dist: ${p.distance_m ? p.distance_m + 'm' : '--'} | TTC: ${p.ttc_s ? p.ttc_s + 's' : '--'}
+                            </div>
+                        </div>
+                        <span class="tag-risk tag-${p.risk_level}">${p.risk_level} (${Math.round(p.risk_score * 100)}%)</span>
+                    `;
+                    pedList.appendChild(card);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
